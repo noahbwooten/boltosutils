@@ -20,15 +20,8 @@
 
 /* Begin PBXFileReference section */
 		8CEC59222FA707D200EC7C24 /* boltosutils */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = boltosutils; sourceTree = BUILT_PRODUCTS_DIR; };
+		8CEC592C2FA707D900EC7C24 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		8CEC59242FA707D200EC7C24 /* boltosutils */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = boltosutils;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8CEC591F2FA707D200EC7C24 /* Frameworks */ = {
@@ -44,7 +37,7 @@
 		8CEC59192FA707D200EC7C24 = {
 			isa = PBXGroup;
 			children = (
-				8CEC59242FA707D200EC7C24 /* boltosutils */,
+				8CEC592C2FA707D900EC7C24 /* main.c */,
 				8CEC59232FA707D200EC7C24 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,9 +64,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				8CEC59242FA707D200EC7C24 /* boltosutils */,
 			);
 			name = boltosutils;
 			packageProductDependencies = (
