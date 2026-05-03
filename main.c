@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
         Version(argc, argv);
     } else if (!strcmp(argv[1], "resource")) {
         //Resource(argc, argv);
+        
     }
     
     return 0;
