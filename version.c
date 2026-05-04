@@ -112,12 +112,12 @@ void Version(int argc, char** argv) {
             " osinfo.h\n" \
             " (c) Noah Wooten 2023 - 2026, All Rights Reserved\n" \
             " */\n\n" \
-            "#define OSINFO_NAME \"%s\"\n" \
+            "#define OSINFO_NAME L\"%s\"\n" \
             "#define OSINFO_MAJOR %lu\n" \
             "#define OSINFO_MINOR %lu\n" \
             "#define OSINFO_BUILD %lu\n" \
             "#define OSINFO_REVSN %lu\n\n" \
-            "#define OSINFO_BRANCH \"%s\"\n" \
+            "#define OSINFO_BRANCH L\"%s\"\n" \
             "#define OSINFO_DATE %06lu\n" \
             "#define OSINFO_TIME %04lu\n" \
             "#endif", \
