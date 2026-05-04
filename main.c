@@ -20,8 +20,7 @@ int main(int argc, char** argv) {
     if (!strcmp(argv[1], "version")) {
         Version(argc, argv);
     } else if (!strcmp(argv[1], "resource")) {
-        //Resource(argc, argv);
-        
+        Resource(argc, argv);
     }
     
     return 0;

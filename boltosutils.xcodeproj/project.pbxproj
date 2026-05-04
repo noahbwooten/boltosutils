@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8CEC59302FA7094D00EC7C24 /* resource.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592F2FA7092F00EC7C24 /* resource.c */; };
+		8CAE58152FA8699B00635DE9 /* resource.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CAE58142FA8699900635DE9 /* resource.c */; };
+		8CEC59302FA7094D00EC7C24 /* multibmpres.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592F2FA7092F00EC7C24 /* multibmpres.c */; };
 		8CEC59312FA7094D00EC7C24 /* version.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592E2FA7091000EC7C24 /* version.c */; };
 		8CEC59322FA7094D00EC7C24 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592C2FA707D900EC7C24 /* main.c */; };
 /* End PBXBuildFile section */
@@ -25,11 +26,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8CAE58142FA8699900635DE9 /* resource.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = resource.c; sourceTree = "<group>"; };
 		8CEC59222FA707D200EC7C24 /* boltosutils */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = boltosutils; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CEC592C2FA707D900EC7C24 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		8CEC592D2FA7083300EC7C24 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = README.md; sourceTree = "<group>"; };
 		8CEC592E2FA7091000EC7C24 /* version.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = version.c; sourceTree = "<group>"; };
-		8CEC592F2FA7092F00EC7C24 /* resource.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = resource.c; sourceTree = "<group>"; };
+		8CEC592F2FA7092F00EC7C24 /* multibmpres.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = multibmpres.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +48,8 @@
 		8CEC59192FA707D200EC7C24 = {
 			isa = PBXGroup;
 			children = (
-				8CEC592F2FA7092F00EC7C24 /* resource.c */,
+				8CAE58142FA8699900635DE9 /* resource.c */,
+				8CEC592F2FA7092F00EC7C24 /* multibmpres.c */,
 				8CEC592E2FA7091000EC7C24 /* version.c */,
 				8CEC592D2FA7083300EC7C24 /* README.md */,
 				8CEC592C2FA707D900EC7C24 /* main.c */,
@@ -122,9 +125,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8CEC59302FA7094D00EC7C24 /* resource.c in Sources */,
+				8CEC59302FA7094D00EC7C24 /* multibmpres.c in Sources */,
 				8CEC59312FA7094D00EC7C24 /* version.c in Sources */,
 				8CEC59322FA7094D00EC7C24 /* main.c in Sources */,
+				8CAE58152FA8699B00635DE9 /* resource.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
