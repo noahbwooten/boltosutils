@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #define __crt_malloc malloc
 #define __crt_realloc realloc
@@ -25,37 +26,37 @@
 typedef struct _RESOURCE_ITEM {
     char ResName[256];
 
-    unsigned long RawDataLocation;
-    unsigned long RawDataSize;
-    unsigned long Width, Height;
+    uint32_t RawDataLocation;
+    uint32_t RawDataSize;
+    uint32_t Width, Height;
     unsigned char NoCompress;
-    
-    unsigned long NextResource;
+
+    uint32_t NextResource;
 }RESOURCE_ITEM, *PRESOURCE_ITEM;
 
 typedef struct _RESOURCE_LIST {
-    unsigned long FirstRes;
+    uint32_t FirstRes;
 }RESOURCE_LIST, *PRESOURCE_LIST;
 
 int   MultiBmpClient_GetResCount(void* ResList);
 int   MultiBmpClient_GetResByName(void* ResList, char* Name);
 void* MultiBmpClient_GetBmpDataFromRes(void* ResList, int i, unsigned short* Width, unsigned short* Height);
-void* MultiBmpClient_AddResWithBmpData(void* ResList, unsigned long* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip);
-void* MultiBmpClient_Compress(void* RawIn, unsigned long RawSize, unsigned long* OutSize);
-void* MultiBmpClient_Decompress(void* CompIn, unsigned long CompSize, unsigned long* UnCompSize);
+void* MultiBmpClient_AddResWithBmpData(void* ResList, uint32_t* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip);
+void* MultiBmpClient_Compress(void* RawIn, uint32_t RawSize, uint32_t* OutSize);
+void* MultiBmpClient_Decompress(void* CompIn, uint32_t CompSize, uint32_t* UnCompSize);
 char* MultiBmpClient_GetResName(void* _ResList, int i);
-unsigned long MultiBmpClient_GetResSize(void* _ResList, int i, unsigned long* Width, unsigned long* Height);
-unsigned char* MultiBmpClient_GetBytesFromBMP(unsigned char* fileData, int* width, int* height, int* bytesPerPixel, unsigned long* RawDataSize);
+uint32_t MultiBmpClient_GetResSize(void* _ResList, int i, uint32_t* Width, uint32_t* Height);
+unsigned char* MultiBmpClient_GetBytesFromBMP(unsigned char* fileData, int32_t* width, int32_t* height, int* bytesPerPixel, uint32_t* RawDataSize);
 
-void FlipBitmapVertically(void* Data, unsigned long Width, unsigned long Height) {
+void FlipBitmapVertically(void* Data, uint32_t Width, uint32_t Height) {
     if (!Data) return;
 
-    unsigned long rowSize = Width * 3;  // Each row is Width * 3 bytes
+    uint32_t rowSize = Width * 3;  // Each row is Width * 3 bytes
     unsigned char* buffer = (unsigned char*)malloc(rowSize);
     if (!buffer) return;
 
     unsigned char* pixels = (unsigned char*)Data;
-    for (unsigned long y = 0; y < Height / 2; y++) {
+    for (uint32_t y = 0; y < Height / 2; y++) {
         unsigned char* rowTop = pixels + (y * rowSize);
         unsigned char* rowBottom = pixels + ((Height - 1 - y) * rowSize);
 
@@ -70,13 +71,13 @@ void FlipBitmapVertically(void* Data, unsigned long Width, unsigned long Height)
 
 int MultiBmpClient_GetResCount(void* _ResList) {
     PRESOURCE_LIST ResList = _ResList;
-    unsigned long Count = 0;
-    PRESOURCE_ITEM Item = ((char*)_ResList) + ResList->FirstRes;
-    
+    uint32_t Count = 0;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
+
     do {
         Count++;
-        if (Item->NextResource && Item->NextResource != 0xFFFFFFFF)
-            Item = (char*)_ResList + Item->NextResource;
+        if (Item->NextResource &&    Item->NextResource != 0xFFFFFFFF)
+            Item = (void*)((char*)_ResList + Item->NextResource);
         else
             break;
     } while (Item->NextResource);
@@ -86,14 +87,14 @@ int MultiBmpClient_GetResCount(void* _ResList) {
 
 int MultiBmpClient_GetResByName(void* _ResList, char* Name) {
     PRESOURCE_LIST ResList = _ResList;
-    unsigned long Count = 0;
-    PRESOURCE_ITEM Item = (char*)_ResList + ResList->FirstRes;
+    uint32_t Count = 0;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
 
     do {
         if (!__crt_strcmp(Item->ResName, Name))
             return Count;
         Count++;
-        Item = (char*)_ResList + Item->NextResource;
+        Item = (void*)((char*)_ResList + Item->NextResource);
     } while (Item->NextResource);
 
     return -1;
@@ -101,15 +102,15 @@ int MultiBmpClient_GetResByName(void* _ResList, char* Name) {
 
 void* MultiBmpClient_GetBmpDataFromRes(void* _ResList, int i, unsigned short* Width, unsigned short* Height) {
     PRESOURCE_LIST ResList = _ResList;
-    unsigned long Count = 0;
-    PRESOURCE_ITEM Item = (char*)_ResList + ResList->FirstRes;
+    uint32_t Count = 0;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
 
     do {
         if (Count == i) {
             // get this data
             void* Return = __crt_malloc(Item->RawDataSize);
             __crt_memcpy(Return, (char*)_ResList + Item->RawDataLocation, Item->RawDataSize);
-            unsigned long OutSize;
+            uint32_t OutSize;
             void* _Return = MultiBmpClient_Decompress(Return, Item->RawDataSize, &OutSize);
             *Width = Item->Width;
             *Height = Item->Height;
@@ -119,26 +120,28 @@ void* MultiBmpClient_GetBmpDataFromRes(void* _ResList, int i, unsigned short* Wi
 
         Count++;
         if (Item->NextResource)
-            Item = (char*)_ResList + Item->NextResource;
+            Item = (void*)((char*)_ResList + Item->NextResource);
     } while (Item->NextResource);
 
     return NULL;
 }
 
-void* MultiBmpClient_AddResWithBmpData(void* _ResList, unsigned long* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip) {
+void* MultiBmpClient_AddResWithBmpData(void* _ResList, uint32_t* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip) {
     PRESOURCE_LIST ResList = _ResList;
-    PRESOURCE_ITEM Item = (char*)_ResList + ResList->FirstRes;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
 
-    unsigned long OldNext = ResList->FirstRes;
+    uint32_t OldNext = ResList->FirstRes;
 
     do {
         if (!Item->RawDataLocation) {
-            unsigned long Width, Height, BPP, RawSize;
+            int32_t Width, Height;
+            int BPP;
+            uint32_t RawSize;
             void* BitmapData = MultiBmpClient_GetBytesFromBMP(BmpFileData, &Width, &Height, &BPP, &RawSize);
             if (!NoFlip)
                 FlipBitmapVertically(BitmapData, Width, Height);
 
-            unsigned long _RawSize;
+            uint32_t _RawSize;
             void* _BitmapData = NULL;
             if (!NoCompress)
                 _BitmapData = MultiBmpClient_Compress(BitmapData, RawSize, &_RawSize);
@@ -151,7 +154,7 @@ void* MultiBmpClient_AddResWithBmpData(void* _ResList, unsigned long* ResListSiz
             _ResList = __crt_realloc(_ResList, *ResListSize + _RawSize);
             __crt_free(BitmapData);
             __crt_memcpy((char*)_ResList + *ResListSize, _BitmapData, _RawSize);
-            PRESOURCE_ITEM NewItem = (char*)_ResList + OldNext;
+            PRESOURCE_ITEM NewItem = (void*)((char*)_ResList + OldNext);
 
             NewItem->Width = Width;
             NewItem->Height = Height;
@@ -161,7 +164,7 @@ void* MultiBmpClient_AddResWithBmpData(void* _ResList, unsigned long* ResListSiz
             __crt_strcpy(NewItem->ResName, Name);
             *ResListSize += _RawSize;
             NewItem->NextResource = *ResListSize;
-            
+
             _ResList = __crt_realloc(_ResList, *ResListSize + sizeof(RESOURCE_ITEM));
             __crt_memset((char*)_ResList + *ResListSize, 0, sizeof(RESOURCE_ITEM));
 
@@ -170,31 +173,31 @@ void* MultiBmpClient_AddResWithBmpData(void* _ResList, unsigned long* ResListSiz
             return _ResList;
         } else {
             OldNext = Item->NextResource;
-            Item = (char*)_ResList + Item->NextResource;
+            Item = (void*)((char*)_ResList + Item->NextResource);
         }
     } while (1);
 }
 
 char* MultiBmpClient_GetResName(void* _ResList, int i) {
     PRESOURCE_LIST ResList = _ResList;
-    unsigned long Count = 0;
-    PRESOURCE_ITEM Item = (char*)_ResList + ResList->FirstRes;
+    uint32_t Count = 0;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
 
     do {
         if (Count == i) {
             return Item->ResName;
         }
         Count++;
-        Item = (char*)_ResList + Item->NextResource;
+        Item = (void*)((char*)_ResList + Item->NextResource);
     } while (Item->NextResource);
 
     return NULL;
 }
 
-unsigned long MultiBmpClient_GetResSize(void* _ResList, int i, unsigned long* Width, unsigned long* Height) {
+uint32_t MultiBmpClient_GetResSize(void* _ResList, int i, uint32_t* Width, uint32_t* Height) {
     PRESOURCE_LIST ResList = _ResList;
-    unsigned long Count = 0;
-    PRESOURCE_ITEM Item = (char*)_ResList + ResList->FirstRes;
+    uint32_t Count = 0;
+    PRESOURCE_ITEM Item = (void*)((char*)_ResList + ResList->FirstRes);
 
     do {
         if (Count == i) {
@@ -203,13 +206,13 @@ unsigned long MultiBmpClient_GetResSize(void* _ResList, int i, unsigned long* Wi
             return Item->RawDataSize;
         }
         Count++;
-        Item = (char*)_ResList + Item->NextResource;
+        Item = (void*)((char*)_ResList + Item->NextResource);
     } while (Item->NextResource);
 
-    return NULL;
+    return 0;
 }
 
-void* MultiBmpClient_Compress(void* RawIn, unsigned long RawSize, unsigned long* OutSize) {
+void* MultiBmpClient_Compress(void* RawIn, uint32_t RawSize, uint32_t* OutSize) {
     if (!RawIn || RawSize == 0) {
         *OutSize = 0;
         return NULL;
@@ -217,15 +220,15 @@ void* MultiBmpClient_Compress(void* RawIn, unsigned long RawSize, unsigned long*
 
     unsigned char* Input = (unsigned char*)RawIn;
     // Allocate worst-case output buffer (each input byte becomes 2 bytes)
-    unsigned long MaxOutputSize = RawSize * 2;
+    uint32_t MaxOutputSize = RawSize * 2;
     unsigned char* Return = __crt_malloc(MaxOutputSize);
     if (!Return) {
         *OutSize = 0;
         return NULL;
     }
 
-    unsigned long InIndex = 0;
-    unsigned long OutIndex = 0;
+    uint32_t InIndex = 0;
+    uint32_t OutIndex = 0;
 
     while (InIndex < RawSize) {
         unsigned char Current = Input[InIndex];
@@ -254,15 +257,15 @@ void* MultiBmpClient_Compress(void* RawIn, unsigned long RawSize, unsigned long*
     return ShrunkOutput ? ShrunkOutput : Return;
 }
 
-void* MultiBmpClient_Decompress(void* CompIn, unsigned long CompSize, unsigned long* UnCompSize) {
+void* MultiBmpClient_Decompress(void* CompIn, uint32_t CompSize, uint32_t* UnCompSize) {
     if (!CompIn || CompSize == 0) {
         *UnCompSize = 0;
         return NULL;
     }
 
     unsigned char* Comp = (unsigned char*)CompIn;
-    unsigned long InIndex = 0;
-    unsigned long TotalOutputSize = 0;
+    uint32_t InIndex = 0;
+    uint32_t TotalOutputSize = 0;
 
     // First pass: calculate the size of the uncompressed data.
     while (InIndex < CompSize) {
@@ -280,14 +283,14 @@ void* MultiBmpClient_Decompress(void* CompIn, unsigned long CompSize, unsigned l
 
     // Allocate the output buffer
     unsigned char* Output = __crt_malloc(TotalOutputSize);
-    
+
     if (!Output) {
         *UnCompSize = 0;
         return NULL;
     }
 
     InIndex = 0;
-    unsigned long OutIndex = 0;
+    uint32_t OutIndex = 0;
 
     // Second pass: decompress the data.
     while (InIndex < CompSize) {
@@ -304,67 +307,65 @@ void* MultiBmpClient_Decompress(void* CompIn, unsigned long CompSize, unsigned l
     return Output;
 }
 
-#pragma pack(push, 1) // Ensure no padding
+#pragma pack(push, 1)
 typedef struct {
-    unsigned short bfType;      // File type, must be 'BM'
-    unsigned int bfSize;        // Size of the file (in bytes)
-    unsigned short bfReserved1; // Reserved, must be 0
-    unsigned short bfReserved2; // Reserved, must be 0
-    unsigned int bfOffBits;     // Offset to start of pixel data
+    uint16_t bfType;
+    uint32_t bfSize;
+    uint16_t bfReserved1;
+    uint16_t bfReserved2;
+    uint32_t bfOffBits;
 } BMPFileHeader;
 
-// BMP info header structure
 typedef struct {
-    unsigned int biSize;          // Size of this header (40 bytes)
-    int biWidth;                  // Width of the image
-    int biHeight;                 // Height of the image
-    unsigned short biPlanes;      // Number of color planes (must be 1)
-    unsigned short biBitCount;    // Bits per pixel (24 for RGB)
-    unsigned int biCompression;   // Compression type (0 = none)
-    unsigned int biSizeImage;     // Image size (can be 0 if uncompressed)
-    int biXPelsPerMeter;          // Horizontal resolution
-    int biYPelsPerMeter;          // Vertical resolution
-    unsigned int biClrUsed;       // Number of colors used (0 = all colors)
-    unsigned int biClrImportant;  // Number of important colors (0 = all)
+    uint32_t biSize;
+    int32_t  biWidth;
+    int32_t  biHeight;
+    uint16_t biPlanes;
+    uint16_t biBitCount;
+    uint32_t biCompression;
+    uint32_t biSizeImage;
+    int32_t  biXPelsPerMeter;
+    int32_t  biYPelsPerMeter;
+    uint32_t biClrUsed;
+    uint32_t biClrImportant;
 } BMPInfoHeader;
 #pragma pack(pop)
 
-// Function to load BMP file from memory into a byte array
-unsigned char* MultiBmpClient_GetBytesFromBMP(unsigned char* fileData, int* width, int* height, int* bytesPerPixel, unsigned long* RawDataSize) {
+unsigned char* MultiBmpClient_GetBytesFromBMP(
+    unsigned char* fileData,
+    int32_t* width,
+    int32_t* height,
+    int* bytesPerPixel,
+    uint32_t* RawDataSize)
+{
     const unsigned char* dataPtr = fileData;
-
     BMPFileHeader fileHeader;
     BMPInfoHeader infoHeader;
 
-    // Read the file header
-    __crt_memcpy(&fileHeader, dataPtr, sizeof(BMPFileHeader));
+    memcpy(&fileHeader, dataPtr, sizeof(BMPFileHeader));
     dataPtr += sizeof(BMPFileHeader);
 
-    if (fileHeader.bfType != 0x4D42) { // 'BM' in little-endian
+    if (fileHeader.bfType != 0x4D42) {
         return NULL;
     }
 
-    // Read the info header
-    __crt_memcpy(&infoHeader, dataPtr, sizeof(BMPInfoHeader));
+    memcpy(&infoHeader, dataPtr, sizeof(BMPInfoHeader));
     dataPtr += sizeof(BMPInfoHeader);
 
-    *width = infoHeader.biWidth;
-    *height = infoHeader.biHeight;
+    *width        = infoHeader.biWidth;
+    *height       = infoHeader.biHeight;
     *bytesPerPixel = infoHeader.biBitCount / 8;
 
     if (infoHeader.biCompression != 0 || *bytesPerPixel != 3) {
         return NULL;
     }
 
-    // Allocate memory for pixel data
-    unsigned char* pixelData = (unsigned char*)__crt_malloc(infoHeader.biSizeImage);
+    unsigned char* pixelData = (unsigned char*)malloc(infoHeader.biSizeImage);
     if (!pixelData) {
         return NULL;
     }
 
-    // Copy pixel data from memory
-    __crt_memcpy(pixelData, fileData + fileHeader.bfOffBits, infoHeader.biSizeImage);
+    memcpy(pixelData, fileData + fileHeader.bfOffBits, infoHeader.biSizeImage);
     *RawDataSize = infoHeader.biSizeImage;
-
     return pixelData;
 }

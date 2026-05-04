@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #define __crt_malloc malloc
 #define __crt_realloc realloc
@@ -20,37 +22,37 @@
 typedef struct _RESOURCE_ITEM {
     char ResName[256];
 
-    unsigned long RawDataLocation;
-    unsigned long RawDataSize;
-    unsigned long Width, Height;
+    uint32_t RawDataLocation;
+    uint32_t RawDataSize;
+    uint32_t Width, Height;
     unsigned char NoCompress;
-    
-    unsigned long NextResource;
+
+    uint32_t NextResource;
 }RESOURCE_ITEM, *PRESOURCE_ITEM;
 
 typedef struct _RESOURCE_LIST {
-    unsigned long FirstRes;
+    uint32_t FirstRes;
 }RESOURCE_LIST, *PRESOURCE_LIST;
 
 int   MultiBmpClient_GetResCount(void* ResList);
 int   MultiBmpClient_GetResByName(void* ResList, char* Name);
 void* MultiBmpClient_GetBmpDataFromRes(void* ResList, int i, unsigned short* Width, unsigned short* Height);
-void* MultiBmpClient_AddResWithBmpData(void* ResList, unsigned long* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip);
-void* MultiBmpClient_Compress(void* RawIn, unsigned long RawSize, unsigned long* OutSize);
-void* MultiBmpClient_Decompress(void* CompIn, unsigned long CompSize, unsigned long* UnCompSize);
+void* MultiBmpClient_AddResWithBmpData(void* ResList, uint32_t* ResListSize, char* Name, void* BmpFileData, unsigned char NoCompress, unsigned char NoFlip);
+void* MultiBmpClient_Compress(void* RawIn, uint32_t RawSize, uint32_t* OutSize);
+void* MultiBmpClient_Decompress(void* CompIn, uint32_t CompSize, uint32_t* UnCompSize);
 char* MultiBmpClient_GetResName(void* _ResList, int i);
-unsigned long MultiBmpClient_GetResSize(void* _ResList, int i, unsigned long* Width, unsigned long* Height);
-unsigned char* MultiBmpClient_GetBytesFromBMP(unsigned char* fileData, int* width, int* height, int* bytesPerPixel, unsigned long* RawDataSize);
+uint32_t MultiBmpClient_GetResSize(void* _ResList, int i, uint32_t* Width, uint32_t* Height);
+unsigned char* MultiBmpClient_GetBytesFromBMP(unsigned char* fileData, int32_t* width, int32_t* height, int* bytesPerPixel, uint32_t* RawDataSize);
 
-void __FlipBitmapVertically(void* Data, unsigned long Width, unsigned long Height) {
+void __FlipBitmapVertically(void* Data, uint32_t Width, uint32_t Height) {
     if (!Data) return;
 
-    unsigned long rowSize = Width * 3;  // Each row is Width * 3 bytes
+    uint32_t rowSize = Width * 3;  // Each row is Width * 3 bytes
     unsigned char* buffer = (unsigned char*)malloc(rowSize);
     if (!buffer) return;
 
     unsigned char* pixels = (unsigned char*)Data;
-    for (unsigned long y = 0; y < Height / 2; y++) {
+    for (uint32_t y = 0; y < Height / 2; y++) {
         unsigned char* rowTop = pixels + (y * rowSize);
         unsigned char* rowBottom = pixels + ((Height - 1 - y) * rowSize);
 
@@ -72,7 +74,7 @@ void Resource(int argc, char** argv) {
          boltosutils[0] resource[1] resourcefile[2] list[3]
          boltosutils[0] resource[1] resourcefile[2] add[3] file[4] name[5] (opt)noflip[x] (opt)nocompress[x]
          */
-        
+
         char* ResFile = argv[2];
         if (argc >= 3 && !strcmp(ResFile, "help")) {
             printf("boltosutils resource help : Displays help msg\n");
@@ -80,13 +82,13 @@ void Resource(int argc, char** argv) {
             printf("boltosutils resource resourcefile add file name (opt)noflip (opt)nocompress\n");
             return;
         }
-        
+
         char* Function = argv[3];
         if (argc < 4) {
             printf("[ERR]: Missing function.\n");
             return;
         }
-        
+
         if (!strcmp(Function, "list")) {
             // list
             FILE* ResFile_ = fopen(ResFile, "rb");
@@ -94,64 +96,65 @@ void Resource(int argc, char** argv) {
                 printf("[ERR]: Failed to open resource file.\n");
                 return;
             }
-            
-            unsigned long ResFileSz = 0;
+
+            uint32_t ResFileSz = 0;
             fseek(ResFile_, 0, SEEK_END);
-            ResFileSz = ftell(ResFile_);
-            
+            ResFileSz = (uint32_t)ftell(ResFile_);
+            fseek(ResFile_, 0, SEEK_SET);
+
             void* BmpRes = malloc(ResFileSz);
             fread(BmpRes, ResFileSz, 1, ResFile_);
             fclose(ResFile_);
-            
+
             int ResourceCnt = MultiBmpClient_GetResCount(BmpRes);
-            
+
             printf("boltosutils Resource Manager\n");
             for (int i = 0; i < ResourceCnt; i++) {
-                unsigned long Width, Height;
-                unsigned long Compressed = MultiBmpClient_GetResSize(BmpRes, i, &Width, &Height) / 1024;
-                unsigned long FullSize = (Width * Height * 3) / 1024;
-                printf("%i.) '%s' (%lux%lu, %lu KiB, %lu KiB Uncompressed)\n", i + 1, MultiBmpClient_GetResName(BmpRes, i),
+                uint32_t Width, Height;
+                uint32_t Compressed = MultiBmpClient_GetResSize(BmpRes, i, &Width, &Height) / 1024;
+                uint32_t FullSize = (Width * Height * 3) / 1024;
+                printf("%i.) '%s' (%" PRIu32 "x%" PRIu32 ", %" PRIu32 " KiB, %" PRIu32 " KiB Uncompressed)\n", i + 1, MultiBmpClient_GetResName(BmpRes, i),
                     Width, Height, Compressed, FullSize);
             }
             printf("Located %i resources in file.\n", ResourceCnt);
-            
+
         } else {
             // add
             unsigned char FlipFlags = 0x00;
             for (int i = 6; i < argc; i++) {
-                
+
                 if (!strcmp(argv[i], "noflip"))
                     FlipFlags |= 0x01;
                 if (!strcmp(argv[i], "nocompress"))
                     FlipFlags |= 0x02;
             }
-            
+
             char* PicturePath = argv[4];
             char* PictureName = argv[5];
-            
+
             if (!(argc >= 6)) {
                 printf("[ERR]: An image and name must be passed!\n");
                 return;
             }
-            
+
             FILE* BitmapFile = fopen(PicturePath, "rb");
             if (!BitmapFile) {
                 printf("[ERR]: Cannot open specified image.\n");
                 return;
             }
-            
-            unsigned long BitmapSize = 0;
+
+            uint32_t BitmapSize = 0;
             fseek(BitmapFile, 0, SEEK_END);
-            BitmapSize = ftell(BitmapFile);
-            
+            BitmapSize = (uint32_t)ftell(BitmapFile);
+
             void* BitmapData = malloc(BitmapSize);
             fseek(BitmapFile, 0, SEEK_SET);
             fread(BitmapData, BitmapSize, 1, BitmapFile);
             fclose(BitmapFile);
-            
-            FILE* File = fopen(argv[1], "rb");
+
+            FILE* File = fopen(argv[2], "rb");
             if (!File) {
-                File = fopen(argv[1], "wb");
+                File = fopen(argv[2], "wb");
                 RESOURCE_LIST ResList = { 0 };
                 ResList.FirstRes = 0x4;
                 fwrite(&ResList, sizeof(RESOURCE_LIST), 1, File);
@@ -160,29 +163,27 @@ void Resource(int argc, char** argv) {
             }
 
             fclose(File);
-            File = fopen(argv[1], "rb+");
-            
-            unsigned long StoreSize;
+            File = fopen(argv[2], "rb+");
+
+            uint32_t StoreSize;
             fseek(File, 0, SEEK_END);
-            StoreSize = ftell(File);
+            StoreSize = (uint32_t)ftell(File);
             fseek(File, 0, SEEK_SET);
             void* _ResFile = malloc(StoreSize);
             fread(_ResFile, StoreSize, 1, File);
-            
-            unsigned long OldStoreSize = StoreSize;
+
+            uint32_t OldStoreSize = StoreSize;
             _ResFile = MultiBmpClient_AddResWithBmpData(_ResFile, &StoreSize, PictureName, BitmapData, FlipFlags & 0x02, FlipFlags & 0x01);
             free(BitmapData);
 
             double CompressionPercentage = (1.0 - ((double)(StoreSize - OldStoreSize) / (BitmapSize))) * 100.0;
-            printf("Added resource '%s', added %lu KiB (%0.2f%% compression)\n", PictureName, (StoreSize - OldStoreSize) / 1024, CompressionPercentage);
-                        
+            printf("Added resource '%s', added %" PRIu32 " KiB (%0.2f%% compression)\n", PictureName, (StoreSize - OldStoreSize) / 1024, CompressionPercentage);
+
             fseek(File, 0, SEEK_SET);
             fwrite(_ResFile, StoreSize, 1, File);
             fflush(File);
             fclose(File);
             free(_ResFile);
-            
-            free(BitmapData);
         }
     }
     return;

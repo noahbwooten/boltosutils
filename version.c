@@ -6,13 +6,15 @@
 //
 
 #include <stdio.h>
-#include <wchar.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <time.h>
 
 typedef char CHAR, *PSTR, BOOL;
 typedef unsigned short WCHAR, *PWSTR;
-typedef unsigned long WORD32;
+typedef uint32_t WORD32;
 
 typedef struct _OSINFO {
     CHAR OsName[64];
@@ -25,11 +27,11 @@ typedef struct _OSINFO {
 #define FLAG_UPDATE  0x0004
 
 void Version(int argc, char** argv) {
-    
+
     POSINFO OsInfo = malloc(sizeof(OSINFO));
     memset(OsInfo, 0, sizeof(OSINFO));
     WORD32 FlagWord = 0x00;
-    
+
     // determine logic
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "release")) {
@@ -40,7 +42,7 @@ void Version(int argc, char** argv) {
             FlagWord = FLAG_INCRMNT;
         }
     }
-    
+
     // open the osinfo file
     FILE* OsInfoFile = fopen("osinfo.dat", "rb+");
     if (!OsInfoFile) {
@@ -55,23 +57,23 @@ void Version(int argc, char** argv) {
     } else {
         fread(OsInfo, sizeof(OSINFO), 1, OsInfoFile);
     }
-    
+
     if (FlagWord == FLAG_RELEASE) {
         OsInfo->Build += 1;
         OsInfo->Revision = 0;
     } else if (FlagWord == FLAG_UPDATE) {
         printf("OS Name (Current %s): ", OsInfo->OsName);
         scanf("%s", OsInfo->OsName);
-        printf("OS Major (Current %lu): ", OsInfo->MajorVersion);
-        scanf("%li", &OsInfo->MajorVersion);
-        printf("OS Minor (Current %lu): ", OsInfo->MinorVersion);
-        scanf("%li", &OsInfo->MinorVersion);
-        printf("OS Build (Current %lu): ", OsInfo->Build);
-        scanf("%li", &OsInfo->Build);
+        printf("OS Major (Current %" PRIu32 "): ", OsInfo->MajorVersion);
+        scanf("%" SCNu32, &OsInfo->MajorVersion);
+        printf("OS Minor (Current %" PRIu32 "): ", OsInfo->MinorVersion);
+        scanf("%" SCNu32, &OsInfo->MinorVersion);
+        printf("OS Build (Current %" PRIu32 "): ", OsInfo->Build);
+        scanf("%" SCNu32, &OsInfo->Build);
     } else if (FlagWord == FLAG_INCRMNT) {
         OsInfo->Revision += 1;
     }
-    
+
     fclose(OsInfoFile);
     OsInfoFile = fopen("osinfo.dat", "wb+");
     if (!OsInfoFile) {
@@ -79,10 +81,10 @@ void Version(int argc, char** argv) {
         free(OsInfo);
         return;
     }
-    
+
     fwrite(OsInfo, sizeof(OSINFO), 1, OsInfoFile);
     fclose(OsInfoFile);
-    
+
     // Get Branch Name
     char Buffer[128];
     char Branch[128] = { 0 };
@@ -92,19 +94,19 @@ void Version(int argc, char** argv) {
     }
     pclose(Pipe);
     Branch[strcspn(Branch, "\n")] = 0x00;
-    
+
     // Get Time/Date
-    unsigned long Time, Date;
+    uint32_t Time, Date;
     time_t Now = time(NULL);
     struct tm* Local = localtime(&Now);
-        
+
     Date = ((Local->tm_year + 1900) - 2000) * 10000 +  // Calculate year
         (Local->tm_mon + 1) * 100 + // Calculate month
         (Local->tm_mday); // Calculate day
     Time = Local->tm_hour * 100 + Local->tm_min;
-    
+
     char* HeaderOut = malloc(2048);
-    
+
     sprintf(HeaderOut,
             "#ifndef _OSINFO\n" \
             "#define _OSINFO\n" \
@@ -113,23 +115,23 @@ void Version(int argc, char** argv) {
             " (c) Noah Wooten 2023 - 2026, All Rights Reserved\n" \
             " */\n\n" \
             "#define OSINFO_NAME L\"%s\"\n" \
-            "#define OSINFO_MAJOR %lu\n" \
-            "#define OSINFO_MINOR %lu\n" \
-            "#define OSINFO_BUILD %lu\n" \
-            "#define OSINFO_REVSN %lu\n\n" \
+            "#define OSINFO_MAJOR %" PRIu32 "\n" \
+            "#define OSINFO_MINOR %" PRIu32 "\n" \
+            "#define OSINFO_BUILD %" PRIu32 "\n" \
+            "#define OSINFO_REVSN %" PRIu32 "\n\n" \
             "#define OSINFO_BRANCH L\"%s\"\n" \
-            "#define OSINFO_DATE %06lu\n" \
-            "#define OSINFO_TIME %04lu\n" \
+            "#define OSINFO_DATE %06" PRIu32 "\n" \
+            "#define OSINFO_TIME %04" PRIu32 "\n" \
             "#endif", \
             OsInfo->OsName, OsInfo->MajorVersion,
             OsInfo->MinorVersion, OsInfo->Build,
             OsInfo->Revision, Branch, Date,
             Time);
-    
-    printf("%s Version %lu.%lu Build %lu.%lu.%s.%06lu-%04lu\n", OsInfo->OsName,
+
+    printf("%s Version %" PRIu32 ".%" PRIu32 " Build %" PRIu32 ".%" PRIu32 ".%s.%06" PRIu32 "-%04" PRIu32 "\n", OsInfo->OsName,
             OsInfo->MajorVersion, OsInfo->MinorVersion, OsInfo->Build,
             OsInfo->Revision, Branch, Date, Time);
-    
+
     free(OsInfo);
     FILE* HeaderOutFile = fopen("osinfo.h", "w");
     if (!HeaderOutFile) {
@@ -137,7 +139,9 @@ void Version(int argc, char** argv) {
         free(HeaderOut);
         return;
     }
-    
+
     fwrite(HeaderOut, strlen(HeaderOut) + 1, 1, HeaderOutFile);
+    fclose(HeaderOutFile);
+    free(HeaderOut);
     return;
 }
