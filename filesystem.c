@@ -83,7 +83,7 @@ static int EnsureDirectories(PWOOFS_HEAD Fs, const char* Path) {
             WORD64 Err = WoofsGetLastError(Fs);
 
             if (Result == 0xFFFFFFFFFFFFFFFFULL && Err != WOOFS_ERROR_ALREADY_EXISTS) {
-                printf("[ERR]: Failed to create directory '%s' (error 0x%llx)\n", Buf, Err);
+                printf("[ERR]: Failed to create directory '%s' (error 0x%lx)\n", Buf, Err);
                 return -1;
             }
         }
