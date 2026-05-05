@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8CA9B7AB2FA9CCBA00CD4F8C /* filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CA9B7AA2FA9CCB500CD4F8C /* filesystem.c */; };
 		8CAE58152FA8699B00635DE9 /* resource.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CAE58142FA8699900635DE9 /* resource.c */; };
 		8CEC59302FA7094D00EC7C24 /* multibmpres.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592F2FA7092F00EC7C24 /* multibmpres.c */; };
 		8CEC59312FA7094D00EC7C24 /* version.c in Sources */ = {isa = PBXBuildFile; fileRef = 8CEC592E2FA7091000EC7C24 /* version.c */; };
@@ -26,6 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8CA9B7AA2FA9CCB500CD4F8C /* filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = filesystem.c; sourceTree = "<group>"; };
 		8CAE58142FA8699900635DE9 /* resource.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = resource.c; sourceTree = "<group>"; };
 		8CEC59222FA707D200EC7C24 /* boltosutils */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = boltosutils; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CEC592C2FA707D900EC7C24 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
@@ -33,6 +35,14 @@
 		8CEC592E2FA7091000EC7C24 /* version.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = version.c; sourceTree = "<group>"; };
 		8CEC592F2FA7092F00EC7C24 /* multibmpres.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = multibmpres.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8CA9B7AC2FA9CCBE00CD4F8C /* woofs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = woofs;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8CEC591F2FA707D200EC7C24 /* Frameworks */ = {
@@ -48,6 +58,8 @@
 		8CEC59192FA707D200EC7C24 = {
 			isa = PBXGroup;
 			children = (
+				8CA9B7AC2FA9CCBE00CD4F8C /* woofs */,
+				8CA9B7AA2FA9CCB500CD4F8C /* filesystem.c */,
 				8CAE58142FA8699900635DE9 /* resource.c */,
 				8CEC592F2FA7092F00EC7C24 /* multibmpres.c */,
 				8CEC592E2FA7091000EC7C24 /* version.c */,
@@ -79,6 +91,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8CA9B7AC2FA9CCBE00CD4F8C /* woofs */,
 			);
 			name = boltosutils;
 			packageProductDependencies = (
@@ -125,6 +140,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8CA9B7AB2FA9CCBA00CD4F8C /* filesystem.c in Sources */,
 				8CEC59302FA7094D00EC7C24 /* multibmpres.c in Sources */,
 				8CEC59312FA7094D00EC7C24 /* version.c in Sources */,
 				8CEC59322FA7094D00EC7C24 /* main.c in Sources */,
@@ -254,6 +270,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -262,6 +279,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
