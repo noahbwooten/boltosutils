@@ -283,7 +283,7 @@ WORD64 WoofsHashString64(PSTR String) {
 
     WORD64 HashBase = Constants[254];
     for (int i = 0; i < StrLen; i++)
-        HashBase ^= Constants[(String[i] & 0x00FF) ^ ((String[i] & 0xFF00) >> 8)];
+        HashBase ^= (Constants[(String[i] & 0x00FF) ^ ((String[i] & 0xFF00) >> 8)] * i);
 
     return HashBase;
 }
